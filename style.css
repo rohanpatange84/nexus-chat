@@ -823,3 +823,7 @@ body {
 .auth-switch button:hover {
   text-decoration: underline;
 }
+
+.inside{
+  font-size: 60px;
+}
