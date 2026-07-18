@@ -502,6 +502,7 @@ body {
 
 .input-wrap {
   flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -517,6 +518,7 @@ body {
 }
 .input-wrap input {
   flex: 1;
+  min-width: 0;
   background: none;
   border: none;
   outline: none;
@@ -721,6 +723,7 @@ body {
   .mobile-back { display: grid; }
   .messages-container { padding: 14px 12px; }
   .message-row { max-width: 88%; }
+  .input-area { padding: 10px 12px; gap: 8px; }
 }
 
 /* =====================================================
