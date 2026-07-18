@@ -95,6 +95,27 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Handle message deletion
+  socket.on('delete_message', async ({ messageId, senderId, receiverId }) => {
+    try {
+      const msg = await Message.findById(messageId);
+      if (msg && msg.sender.toString() === senderId) {
+        await Message.findByIdAndDelete(messageId);
+        
+        // Notify receiver
+        const receiverSocketId = onlineUsers.get(receiverId);
+        if (receiverSocketId) {
+          io.to(receiverSocketId).emit('message_deleted', { messageId });
+        }
+        
+        // Notify sender confirmation
+        socket.emit('message_deleted', { messageId });
+      }
+    } catch (error) {
+      console.error('Error deleting message:', error);
+    }
+  });
+
   // Handle typing indicator
   socket.on('typing', ({ senderId, receiverId }) => {
     const receiverSocketId = onlineUsers.get(receiverId);

@@ -219,6 +219,16 @@ async function connectSocket() {
       }
     }
   });
+
+  socket.on('message_deleted', ({ messageId }) => {
+    // Remove from cache
+    for (const userId in messagesCache) {
+      messagesCache[userId] = messagesCache[userId].filter(m => m._id !== messageId);
+    }
+    // Remove from DOM
+    const row = document.querySelector(`.message-row[data-msg-id="${messageId}"]`);
+    if (row) row.remove();
+  });
 }
 
 // ── Data Fetching ─────────────────────────────────────
@@ -332,6 +342,9 @@ function appendMessageDOM(msg) {
   
   const row = document.createElement('div');
   row.className = `message-row ${isOut ? 'out' : 'in'}`;
+  if (msg._id) {
+    row.dataset.msgId = msg._id;
+  }
   
   const group = document.createElement('div');
   group.className = 'bubble-group';
@@ -354,6 +367,21 @@ function appendMessageDOM(msg) {
   meta.innerHTML = `<span>${d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>${receiptHTML}`;
   
   group.append(bubble, meta);
+
+  if (isOut) {
+    const deleteBtn = document.createElement('div');
+    deleteBtn.className = 'delete-btn';
+    deleteBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`;
+    deleteBtn.title = "Delete Message";
+    deleteBtn.onclick = () => {
+      if(confirm('Delete this message for everyone?')) {
+        const otherId = msg.sender._id === currentUser._id ? msg.receiver : msg.sender._id;
+        socket.emit('delete_message', { messageId: msg._id, senderId: currentUser._id, receiverId: otherId });
+      }
+    };
+    group.appendChild(deleteBtn);
+  }
+
   row.appendChild(group);
   el.messagesContainer.appendChild(row);
 }
