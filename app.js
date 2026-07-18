@@ -409,6 +409,9 @@ function openChat(id) {
   
   if (window.innerWidth <= 680) {
     el.sidebar.classList.add('hidden');
+    if (!history.state || !history.state.chatOpen) {
+      history.pushState({ chatOpen: true }, '');
+    }
   }
 
   renderSidebar();
@@ -568,9 +571,23 @@ function sendMessage() {
 
 if (el.backBtn) {
   el.backBtn.addEventListener('click', () => {
-    el.sidebar.classList.remove('hidden');
+    if (history.state && history.state.chatOpen) {
+      history.back();
+    } else {
+      el.sidebar.classList.remove('hidden');
+    }
   });
 }
+
+window.addEventListener('popstate', (e) => {
+  if (window.innerWidth <= 680) {
+    if (!e.state || !e.state.chatOpen) {
+      el.sidebar.classList.remove('hidden');
+    } else {
+      el.sidebar.classList.add('hidden');
+    }
+  }
+});
 
 // ── Run ───────────────────────────────────────────────
 init();
