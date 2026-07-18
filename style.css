@@ -447,7 +447,23 @@ body {
 }
 .message-row.out .bubble-meta { flex-direction: row-reverse; }
 
-.tick-icon { color: var(--accent-2); }
+.read-receipt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.check-icon {
+  margin-left: 2px;
+}
+
+.single-check {
+  color: var(--text-muted);
+}
+
+.double-check {
+  color: var(--accent-2);
+}
 
 .emoji-message {
   background: transparent !important;

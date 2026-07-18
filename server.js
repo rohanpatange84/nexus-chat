@@ -75,6 +75,25 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Handle marking messages as read
+  socket.on('mark_read', async ({ senderId, receiverId }) => {
+    try {
+      // Update all unread messages sent by senderId to receiverId
+      await Message.updateMany(
+        { sender: senderId, receiver: receiverId, isRead: false },
+        { $set: { isRead: true } }
+      );
+
+      // Notify the sender that their messages were read
+      const senderSocketId = onlineUsers.get(senderId);
+      if (senderSocketId) {
+        io.to(senderSocketId).emit('messages_read', { receiverId });
+      }
+    } catch (error) {
+      console.error('Error marking messages as read:', error);
+    }
+  });
+
   // Handle typing indicator
   socket.on('typing', ({ senderId, receiverId }) => {
     const receiverSocketId = onlineUsers.get(receiverId);

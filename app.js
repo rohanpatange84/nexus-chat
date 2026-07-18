@@ -177,11 +177,29 @@ async function connectSocket() {
     if (currentChatUserId === otherUserId) {
       appendMessageDOM(msg);
       scrollToBottom();
+      if (msg.sender._id !== currentUser._id) {
+        socket.emit('mark_read', { senderId: msg.sender._id, receiverId: currentUser._id });
+      }
     } else {
       // Show unread indicator in sidebar
       renderSidebar();
       if (msg.sender._id !== currentUser._id) {
          showToast(`New message from ${msg.sender.name}`);
+      }
+    }
+  });
+
+  socket.on('messages_read', ({ receiverId }) => {
+    if (messagesCache[receiverId]) {
+      messagesCache[receiverId].forEach(msg => {
+        if (msg.sender._id === currentUser._id || msg.sender === currentUser._id) {
+          msg.isRead = true;
+        }
+      });
+      if (currentChatUserId === receiverId) {
+        document.querySelectorAll('.read-receipt').forEach(el => {
+          el.innerHTML = `<svg class="check-icon double-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline><path d="M24 10.5L13.5 21l-3-3"></path></svg>`;
+        });
       }
     }
   });
@@ -242,6 +260,11 @@ function renderSidebar() {
 
 function openChat(id) {
   currentChatUserId = id;
+  
+  if (socket) {
+    socket.emit('mark_read', { senderId: id, receiverId: currentUser._id });
+  }
+
   const peer = users.find(u => u._id === id);
   if (!peer) return;
 
@@ -291,7 +314,15 @@ function appendMessageDOM(msg) {
   const meta = document.createElement('div');
   meta.className = 'bubble-meta';
   const d = new Date(msg.createdAt || Date.now());
-  meta.innerHTML = `<span>${d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>`;
+  
+  let receiptHTML = '';
+  if (isOut) {
+    const doubleCheckSVG = `<svg class="check-icon double-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline><path d="M24 10.5L13.5 21l-3-3"></path></svg>`;
+    const singleCheckSVG = `<svg class="check-icon single-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+    receiptHTML = `<span class="read-receipt" data-msg-id="${msg._id || ''}">${msg.isRead ? doubleCheckSVG : singleCheckSVG}</span>`;
+  }
+  
+  meta.innerHTML = `<span>${d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>${receiptHTML}`;
   
   group.append(bubble, meta);
   row.appendChild(group);
