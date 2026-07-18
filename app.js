@@ -255,6 +255,33 @@ async function connectSocket() {
     const row = document.querySelector(`.message-row[data-msg-id="${messageId}"]`);
     if (row) row.remove();
   });
+
+  socket.on('typing', ({ senderId }) => {
+    if (currentChatUserId === senderId) {
+      el.peerMeta.textContent = 'typing...';
+      el.peerMeta.style.color = 'var(--accent-1)';
+      
+      if (!document.getElementById('typingBubble')) {
+        const row = document.createElement('div');
+        row.id = 'typingBubble';
+        row.className = 'typing-indicator-row';
+        row.innerHTML = `<div class="typing-bubble"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+        el.messagesContainer.appendChild(row);
+        scrollToBottom();
+      }
+    }
+  });
+
+  socket.on('stop_typing', ({ senderId }) => {
+    if (currentChatUserId === senderId) {
+      const peer = users.find(u => u._id === senderId);
+      el.peerMeta.textContent = peer?.status === 'online' ? 'Online' : 'Offline';
+      el.peerMeta.style.color = '';
+      
+      const bubble = document.getElementById('typingBubble');
+      if (bubble) bubble.remove();
+    }
+  });
 }
 
 // ── Data Fetching ─────────────────────────────────────
@@ -359,7 +386,32 @@ function openChat(id) {
 function renderMessages(userId) {
   el.messagesContainer.innerHTML = '';
   const msgs = messagesCache[userId] || [];
-  msgs.forEach(msg => appendMessageDOM(msg));
+  
+  let lastDate = null;
+  msgs.forEach(msg => {
+    const d = new Date(msg.createdAt || Date.now());
+    const dateStr = d.toLocaleDateString();
+    
+    if (dateStr !== lastDate) {
+      const divider = document.createElement('div');
+      divider.className = 'date-divider';
+      
+      const today = new Date().toLocaleDateString();
+      const yesterday = new Date(Date.now() - 86400000).toLocaleDateString();
+      
+      let displayDate = dateStr;
+      if (dateStr === today) displayDate = 'Today';
+      else if (dateStr === yesterday) displayDate = 'Yesterday';
+      else displayDate = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+      
+      divider.innerHTML = `<span>${displayDate}</span>`;
+      el.messagesContainer.appendChild(divider);
+      lastDate = dateStr;
+    }
+    
+    appendMessageDOM(msg);
+  });
+  
   scrollToBottom();
 }
 
@@ -450,6 +502,17 @@ function showToast(msg) {
 el.sendBtn.addEventListener('click', sendMessage);
 el.messageInput.addEventListener('keypress', e => {
   if (e.key === 'Enter') sendMessage();
+});
+
+let typingTimeout = null;
+el.messageInput.addEventListener('input', () => {
+  if (!currentChatUserId) return;
+  socket.emit('typing', { senderId: currentUser._id, receiverId: currentChatUserId });
+  
+  clearTimeout(typingTimeout);
+  typingTimeout = setTimeout(() => {
+    socket.emit('stop_typing', { senderId: currentUser._id, receiverId: currentChatUserId });
+  }, 1500);
 });
 
 function sendMessage() {
