@@ -44,6 +44,11 @@ router.post('/signup', async (req, res) => {
     });
 
     if (user) {
+      const io = req.app.get('io');
+      if (io) {
+        io.emit('new_user', { _id: user._id, name: user.name });
+      }
+      
       res.status(201).json({
         _id: user._id,
         name: user.name,

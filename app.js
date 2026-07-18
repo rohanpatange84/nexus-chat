@@ -157,6 +157,12 @@ async function connectSocket() {
     socket.emit('join', currentUser._id);
   });
   
+  socket.on('new_user', (newUser) => {
+    if (newUser._id !== currentUser._id) {
+      fetchUsers();
+    }
+  });
+  
   socket.on('user_status', ({ userId, status }) => {
     const user = users.find(u => u._id === userId);
     if (user) {

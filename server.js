@@ -17,6 +17,7 @@ const server = http.createServer(app);
 const io = socketIo(server, {
   cors: { origin: '*' }
 });
+app.set('io', io);
 
 // Connect to DB
 connectDB();
