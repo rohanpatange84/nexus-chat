@@ -166,6 +166,8 @@ async function connectSocket() {
         el.peerStatus.className = `status-dot ${status}`;
         el.peerMeta.textContent = status === 'online' ? 'Online' : 'Offline';
       }
+    } else if (userId !== currentUser._id) {
+      fetchUsers();
     }
   });
   
@@ -183,10 +185,14 @@ async function connectSocket() {
     } else {
       // Show unread indicator in sidebar
       const user = users.find(u => u._id === otherUserId);
-      if (user && msg.sender._id !== currentUser._id) {
-        user.unreadCount = (user.unreadCount || 0) + 1;
+      if (user) {
+        if (msg.sender._id !== currentUser._id) {
+          user.unreadCount = (user.unreadCount || 0) + 1;
+        }
+        renderSidebar();
+      } else {
+        fetchUsers();
       }
-      renderSidebar();
       if (msg.sender._id !== currentUser._id) {
          showToast(`New message from ${msg.sender.name}`);
       }
