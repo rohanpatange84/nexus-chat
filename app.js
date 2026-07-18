@@ -265,9 +265,11 @@ function renderSidebar() {
     avatarWrap.appendChild(dot);
     
     const unreadCount = contact.unreadCount || 0;
-    let badgeHTML = '';
     if (unreadCount > 0) {
-      badgeHTML = `<div class="badge">${unreadCount > 99 ? '99+' : unreadCount}</div>`;
+      const badge = document.createElement('div');
+      badge.className = 'badge-avatar';
+      badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+      avatarWrap.appendChild(badge);
     }
     
     const info = document.createElement('div');
@@ -276,9 +278,6 @@ function renderSidebar() {
     
     const meta = document.createElement('div');
     meta.className = 'contact-meta';
-    if (badgeHTML) {
-      meta.innerHTML = badgeHTML;
-    }
     
     li.append(avatarWrap, info, meta);
     li.addEventListener('click', () => openChat(contact._id));

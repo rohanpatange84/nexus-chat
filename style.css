@@ -259,6 +259,25 @@ body {
   display: grid; place-items: center;
 }
 
+.badge-avatar {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--bg-surface);
+  z-index: 10;
+}
+
 /* ── Sidebar Footer ──────────────────────────────── */
 .sidebar-footer {
   display: flex;
