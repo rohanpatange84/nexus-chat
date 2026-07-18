@@ -143,8 +143,9 @@ io.on('connection', (socket) => {
     }
     
     if (disconnectedUserId) {
-      await User.findByIdAndUpdate(disconnectedUserId, { status: 'offline' });
-      io.emit('user_status', { userId: disconnectedUserId, status: 'offline' });
+      const now = new Date();
+      await User.findByIdAndUpdate(disconnectedUserId, { status: 'offline', lastSeen: now });
+      io.emit('user_status', { userId: disconnectedUserId, status: 'offline', lastSeen: now });
       console.log(`User ${disconnectedUserId} disconnected`);
     }
   });

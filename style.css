@@ -219,34 +219,38 @@ body {
 .status-dot.away    { background: var(--away); }
 .status-dot.offline { background: var(--offline); }
 
-.contact-info { flex: 1; min-width: 0; }
+.contact-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
+.contact-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 2px;
+}
 .contact-name {
   font-weight: 500;
-  font-size: 13.5px;
+  font-size: 14.5px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   color: var(--text-primary);
 }
-.contact-preview {
-  font-size: 12px;
-  color: var(--text-secondary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-top: 1px;
-}
-
-.contact-meta {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-  flex-shrink: 0;
-}
 .contact-time {
   font-size: 11px;
   color: var(--text-muted);
+  margin-left: 6px;
+  flex-shrink: 0;
+}
+.contact-preview {
+  font-size: 13px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+}
+.preview-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
 }
 .badge {
   min-width: 18px; height: 18px;
@@ -499,16 +503,22 @@ body {
 .message-row.in  .bubble:not(:last-child) { border-bottom-left-radius: var(--radius-sm); }
 .message-row.out .bubble:not(:last-child) { border-bottom-right-radius: var(--radius-sm); }
 
-.bubble-meta {
-  display: flex;
+.bubble-meta-inline {
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   font-size: 10.5px;
   color: var(--text-muted);
-  padding: 0 4px;
-  margin-top: 2px;
+  margin-left: 12px;
+  float: right;
+  position: relative;
+  top: 6px;
+  line-height: 1;
 }
-.message-row.out .bubble-meta { flex-direction: row-reverse; }
+
+.message-row.out .bubble-meta-inline { 
+  color: rgba(255, 255, 255, 0.7); 
+}
 
 .read-receipt {
   display: flex;
@@ -521,11 +531,11 @@ body {
 }
 
 .single-check {
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .double-check {
-  color: var(--accent-2);
+  color: #fff;
 }
 
 .emoji-message {

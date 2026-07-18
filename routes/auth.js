@@ -105,11 +105,29 @@ router.get('/users', async (req, res) => {
       { $group: { _id: '$sender', count: { $sum: 1 } } }
     ]);
 
+    const lastMessages = await Message.aggregate([
+      { $match: { $or: [{ sender: new mongoose.Types.ObjectId(currentUserId) }, { receiver: new mongoose.Types.ObjectId(currentUserId) }] } },
+      { $sort: { createdAt: -1 } },
+      { $group: { 
+          _id: {
+            $cond: [
+              { $eq: ['$sender', new mongoose.Types.ObjectId(currentUserId)] },
+              '$receiver',
+              '$sender'
+            ]
+          }, 
+          lastMessage: { $first: '$$ROOT' } 
+        } 
+      }
+    ]);
+
     const usersWithUnread = users.map(user => {
       const unreadData = unreadCounts.find(u => u._id.toString() === user._id.toString());
+      const lastMsgData = lastMessages.find(m => m._id.toString() === user._id.toString());
       return {
         ...user,
-        unreadCount: unreadData ? unreadData.count : 0
+        unreadCount: unreadData ? unreadData.count : 0,
+        lastMessage: lastMsgData ? lastMsgData.lastMessage : null
       };
     });
 

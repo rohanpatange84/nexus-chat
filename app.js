@@ -337,12 +337,33 @@ function renderSidebar() {
     
     const info = document.createElement('div');
     info.className = 'contact-info';
-    info.innerHTML = `<div class="contact-name">${contact.name}</div>`;
     
-    const meta = document.createElement('div');
-    meta.className = 'contact-meta';
+    let previewHTML = '';
+    let timeHTML = '';
     
-    li.append(avatarWrap, info, meta);
+    if (contact.lastMessage) {
+      const msgText = contact.lastMessage.text;
+      const d = new Date(contact.lastMessage.createdAt);
+      timeHTML = `<div class="contact-time">${d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>`;
+      
+      let receiptHTML = '';
+      if (contact.lastMessage.sender === currentUser._id || contact.lastMessage.sender._id === currentUser._id) {
+        const doubleCheckSVG = `<svg class="check-icon double-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px;color:var(--accent-1);"><polyline points="20 6 9 17 4 12"></polyline><path d="M24 10.5L13.5 21l-3-3"></path></svg>`;
+        const singleCheckSVG = `<svg class="check-icon single-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px;color:var(--text-muted);"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+        receiptHTML = contact.lastMessage.isRead ? doubleCheckSVG : singleCheckSVG;
+      }
+      previewHTML = `<div class="contact-preview">${receiptHTML}<span class="preview-text">${msgText}</span></div>`;
+    }
+    
+    info.innerHTML = `
+      <div class="contact-header">
+        <div class="contact-name">${contact.name}</div>
+        ${timeHTML}
+      </div>
+      ${previewHTML}
+    `;
+    
+    li.append(avatarWrap, info);
     li.addEventListener('click', () => openChat(contact._id));
     el.contactList.appendChild(li);
   });
@@ -364,7 +385,23 @@ function openChat(id) {
   el.peerAvatar.style.cssText = `background:${peer.color || '#ccc'};color:#fff;width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:50%;font-weight:bold;`;
   el.peerStatus.className = `status-dot ${peer.status || 'offline'}`;
   el.peerName.textContent = peer.name;
-  el.peerMeta.textContent = peer.status === 'online' ? 'Online' : 'Offline';
+  
+  let metaText = peer.status === 'online' ? 'Online' : 'Offline';
+  if (peer.status === 'offline' && peer.lastSeen) {
+    const d = new Date(peer.lastSeen);
+    const today = new Date().toLocaleDateString();
+    const yesterday = new Date(Date.now() - 86400000).toLocaleDateString();
+    const dateStr = d.toLocaleDateString();
+    
+    let displayDate = dateStr;
+    if (dateStr === today) displayDate = 'today';
+    else if (dateStr === yesterday) displayDate = 'yesterday';
+    else displayDate = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    
+    metaText = `last seen ${displayDate} at ${d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+  }
+  
+  el.peerMeta.textContent = metaText;
 
   el.emptyState.style.display = 'none';
   el.chatWindow.style.display = 'flex';
@@ -429,11 +466,9 @@ function appendMessageDOM(msg) {
   
   const bubble = document.createElement('div');
   bubble.className = 'bubble';
-  bubble.textContent = msg.text;
   
-  const meta = document.createElement('div');
-  meta.className = 'bubble-meta';
   const d = new Date(msg.createdAt || Date.now());
+  const timeStr = d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
   
   let receiptHTML = '';
   if (isOut) {
@@ -442,9 +477,12 @@ function appendMessageDOM(msg) {
     receiptHTML = `<span class="read-receipt" data-msg-id="${msg._id || ''}">${msg.isRead ? doubleCheckSVG : singleCheckSVG}</span>`;
   }
   
-  meta.innerHTML = `<span>${d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>${receiptHTML}`;
+  bubble.innerHTML = `
+    <span class="bubble-text">${msg.text}</span>
+    <span class="bubble-meta-inline">${timeStr}${receiptHTML}</span>
+  `;
   
-  group.append(bubble, meta);
+  group.append(bubble);
 
   if (isOut) {
     let touchTimer;
