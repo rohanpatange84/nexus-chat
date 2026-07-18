@@ -182,6 +182,10 @@ async function connectSocket() {
       }
     } else {
       // Show unread indicator in sidebar
+      const user = users.find(u => u._id === otherUserId);
+      if (user && msg.sender._id !== currentUser._id) {
+        user.unreadCount = (user.unreadCount || 0) + 1;
+      }
       renderSidebar();
       if (msg.sender._id !== currentUser._id) {
          showToast(`New message from ${msg.sender.name}`);
@@ -248,11 +252,23 @@ function renderSidebar() {
     dot.className = `status-dot ${contact.status || 'offline'}`;
     avatarWrap.appendChild(dot);
     
+    const unreadCount = contact.unreadCount || 0;
+    let badgeHTML = '';
+    if (unreadCount > 0) {
+      badgeHTML = `<div class="badge">${unreadCount > 99 ? '99+' : unreadCount}</div>`;
+    }
+    
     const info = document.createElement('div');
     info.className = 'contact-info';
     info.innerHTML = `<div class="contact-name">${contact.name}</div>`;
     
-    li.append(avatarWrap, info);
+    const meta = document.createElement('div');
+    meta.className = 'contact-meta';
+    if (badgeHTML) {
+      meta.innerHTML = badgeHTML;
+    }
+    
+    li.append(avatarWrap, info, meta);
     li.addEventListener('click', () => openChat(contact._id));
     el.contactList.appendChild(li);
   });
@@ -267,6 +283,8 @@ function openChat(id) {
 
   const peer = users.find(u => u._id === id);
   if (!peer) return;
+
+  peer.unreadCount = 0;
 
   el.peerAvatar.textContent = peer.avatar || peer.name.charAt(0);
   el.peerAvatar.style.cssText = `background:${peer.color || '#ccc'};color:#fff;width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:50%;font-weight:bold;`;

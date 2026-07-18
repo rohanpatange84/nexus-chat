@@ -90,8 +90,25 @@ router.post('/signin', async (req, res) => {
 router.get('/users', async (req, res) => {
   try {
     const currentUserId = req.query.currentUserId;
-    const users = await User.find({ _id: { $ne: currentUserId } }).select('-password');
-    res.json(users);
+    const mongoose = require('mongoose');
+    const Message = require('../models/Message');
+
+    const users = await User.find({ _id: { $ne: currentUserId } }).select('-password').lean();
+
+    const unreadCounts = await Message.aggregate([
+      { $match: { receiver: new mongoose.Types.ObjectId(currentUserId), isRead: false } },
+      { $group: { _id: '$sender', count: { $sum: 1 } } }
+    ]);
+
+    const usersWithUnread = users.map(user => {
+      const unreadData = unreadCounts.find(u => u._id.toString() === user._id.toString());
+      return {
+        ...user,
+        unreadCount: unreadData ? unreadData.count : 0
+      };
+    });
+
+    res.json(usersWithUnread);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
