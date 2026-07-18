@@ -61,8 +61,8 @@ body {
 /* ── Layout ──────────────────────────────────────── */
 .app-container {
   display: flex;
-  height: 100vh;
-  width: 100vw;
+  height: 100dvh;
+  width: 100%;
   overflow: hidden;
   background: var(--bg-base);
 }
@@ -159,8 +159,9 @@ body {
 .contact-list {
   list-style: none;
   overflow-y: auto;
-  flex-shrink: 0;
-  max-height: 240px;
+  flex-shrink: 1;
+  min-height: 0;
+  max-height: 50vh;
   padding: 0 6px;
 }
 
@@ -728,7 +729,7 @@ body {
 .auth-overlay {
   position: fixed;
   inset: 0;
-  background: var(--bg);
+  background: var(--bg-base);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -736,7 +737,7 @@ body {
 }
 
 .auth-modal {
-  background: var(--panel-bg);
+  background: var(--bg-surface);
   width: 90%;
   max-width: 400px;
   border-radius: 24px;
@@ -792,7 +793,7 @@ body {
 }
 
 .auth-modal input:focus {
-  border-color: var(--primary);
+  border-color: var(--accent-1);
   background: rgba(255, 255, 255, 0.05);
   box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
   outline: none;
@@ -814,7 +815,7 @@ body {
 .auth-switch button {
   background: none;
   border: none;
-  color: var(--primary);
+  color: var(--accent-1);
   font-weight: 500;
   cursor: pointer;
   margin-left: 4px;
