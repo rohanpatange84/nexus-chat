@@ -574,3 +574,12 @@ if (el.backBtn) {
 
 // ── Run ───────────────────────────────────────────────
 init();
+
+// Fix for mobile keyboards leaving gaps or overflowing
+if (window.visualViewport) {
+  const setViewportHeight = () => {
+    document.body.style.height = window.visualViewport.height + 'px';
+  };
+  window.visualViewport.addEventListener('resize', setViewportHeight);
+  setViewportHeight();
+}

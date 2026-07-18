@@ -41,14 +41,12 @@
   --sidebar-w: 290px;
   --transition: 0.22s cubic-bezier(0.4,0,0.2,1);
 }
-
 html, body { 
-  height: 100%; 
-  height: 100dvh;
+  height: 100%;
   overflow: hidden; 
   position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
   width: 100%;
-  inset: 0;
 }
 
 body {
@@ -68,7 +66,7 @@ body {
 /* ── Layout ──────────────────────────────────────── */
 .app-container {
   display: flex;
-  height: 100dvh;
+  height: 100%;
   width: 100%;
   overflow: hidden;
   background: var(--bg-base);
