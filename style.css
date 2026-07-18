@@ -432,35 +432,41 @@ body {
 }
 .message-row.out .bubble-group { align-items: flex-end; }
 
-.delete-btn {
+/* Context Menu */
+.context-menu {
   position: absolute;
-  top: 50%;
-  left: -28px;
-  transform: translateY(-50%);
-  width: 22px;
-  height: 22px;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-muted);
-  cursor: pointer;
+  box-shadow: var(--shadow-card);
+  border-radius: var(--radius-md);
+  padding: 6px;
+  z-index: 2000;
+  min-width: 150px;
+  opacity: 1;
+  transition: opacity 0.2s, transform 0.2s;
+  transform-origin: top left;
+}
+
+.context-menu.hidden {
   opacity: 0;
   pointer-events: none;
-  transition: all 0.2s;
-  z-index: 10;
+  transform: scale(0.95);
 }
 
-.delete-btn:hover {
-  color: #ef4444; /* red icon on hover */
-  border-color: #ef4444;
+.context-menu-item {
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  transition: background 0.2s;
 }
 
-.message-row.out:hover .delete-btn {
-  opacity: 1;
-  pointer-events: auto;
+.context-menu-item:hover {
+  background: var(--bg-surface-hover);
 }
 
 .bubble {

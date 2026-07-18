@@ -47,6 +47,32 @@ const el = {
 
 let isLoginMode = true;
 
+let contextMessageId = null;
+let contextMessageSender = null;
+let contextMessageReceiver = null;
+const ctxMenu = document.getElementById('messageContextMenu');
+const ctxDelete = document.getElementById('deleteOption');
+
+document.addEventListener('click', (e) => {
+  if (e.target.closest('#messageContextMenu')) return;
+  ctxMenu.classList.add('hidden');
+});
+
+document.addEventListener('scroll', () => {
+  ctxMenu.classList.add('hidden');
+}, true);
+
+ctxDelete.addEventListener('click', () => {
+  ctxMenu.classList.add('hidden');
+  if(confirm('Delete this message for everyone?')) {
+    socket.emit('delete_message', { 
+      messageId: contextMessageId, 
+      senderId: contextMessageSender, 
+      receiverId: contextMessageReceiver 
+    });
+  }
+});
+
 // ── Init ──────────────────────────────────────────────
 async function init() {
   const storedUser = localStorage.getItem('user');
@@ -369,17 +395,34 @@ function appendMessageDOM(msg) {
   group.append(bubble, meta);
 
   if (isOut) {
-    const deleteBtn = document.createElement('div');
-    deleteBtn.className = 'delete-btn';
-    deleteBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`;
-    deleteBtn.title = "Delete Message";
-    deleteBtn.onclick = () => {
-      if(confirm('Delete this message for everyone?')) {
-        const otherId = msg.sender._id === currentUser._id ? msg.receiver : msg.sender._id;
-        socket.emit('delete_message', { messageId: msg._id, senderId: currentUser._id, receiverId: otherId });
-      }
+    let touchTimer;
+    
+    const showMenu = (e) => {
+      e.preventDefault();
+      contextMessageId = msg._id;
+      contextMessageSender = currentUser._id;
+      contextMessageReceiver = msg.sender._id === currentUser._id ? msg.receiver : msg.sender._id;
+      
+      const x = e.pageX || (e.touches && e.touches[0].pageX);
+      const y = e.pageY || (e.touches && e.touches[0].pageY);
+      
+      ctxMenu.style.left = `${x}px`;
+      ctxMenu.style.top = `${y}px`;
+      ctxMenu.classList.remove('hidden');
     };
-    group.appendChild(deleteBtn);
+
+    group.addEventListener('contextmenu', showMenu);
+    
+    group.addEventListener('touchstart', (e) => {
+      touchTimer = setTimeout(() => {
+        showMenu(e);
+      }, 600);
+    });
+    
+    const clearTouch = () => clearTimeout(touchTimer);
+    group.addEventListener('touchend', clearTouch);
+    group.addEventListener('touchmove', clearTouch);
+    group.addEventListener('touchcancel', clearTouch);
   }
 
   row.appendChild(group);
