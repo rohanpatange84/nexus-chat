@@ -403,8 +403,13 @@ function appendMessageDOM(msg) {
       contextMessageSender = currentUser._id;
       contextMessageReceiver = msg.sender._id === currentUser._id ? msg.receiver : msg.sender._id;
       
-      const x = e.pageX || (e.touches && e.touches[0].pageX);
+      let x = e.pageX || (e.touches && e.touches[0].pageX);
       const y = e.pageY || (e.touches && e.touches[0].pageY);
+      
+      const menuWidth = 160;
+      if (x + menuWidth > window.innerWidth) {
+        x = window.innerWidth - menuWidth - 15;
+      }
       
       ctxMenu.style.left = `${x}px`;
       ctxMenu.style.top = `${y}px`;
