@@ -724,7 +724,6 @@ body {
   .messages-container { padding: 14px 12px; }
   .message-row { max-width: 88%; }
   .input-area { padding: 10px 12px; gap: 8px; }
-  .send-btn { order: -1; }
 }
 
 /* =====================================================
